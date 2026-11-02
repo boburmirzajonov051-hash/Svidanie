@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Приглашение на свидание</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500;0,600;1,500;1,600&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: one centered card, one question per step, night-plum backdrop with drifting hearts */
+:root{
+  --bg:#2a1220; --bg2:#401a30; --card:#fff6f8; --ink:#3a1a2b; --muted:#8a6475;
+  --rose:#e0587f; --rose-soft:#f8d7e1; --line:#ecc7d3;
+  --display:"Cormorant","Georgia",serif; --body:"Nunito",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(120% 90% at 50% 0%,var(--bg2),var(--bg));color:var(--ink);font-family:var(--body);font-size:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px;
+  display:flex;align-items:center;justify-content:center;min-height:100%;overflow-x:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.card{position:relative;z-index:1;width:100%;max-width:440px;background:var(--card);border-radius:22px;padding:32px 24px 28px;
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.55);text-align:center}
+.step{display:flex;flex-direction:column;gap:18px;animation:in .45s ease both}
+@keyframes in{from{opacity:.0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1,h2{font-family:var(--display);font-weight:600;margin:0;line-height:1.1;text-wrap:balance;color:var(--ink)}
+h1{font-size:clamp(34px,9vw,44px)} h2{font-size:clamp(28px,7.5vw,34px)}
+h1 em,h2 em{color:var(--rose);font-style:italic}
+p{margin:0;color:var(--muted);line-height:1.5}
+.heart{width:64px;height:64px;margin:0 auto;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.12)}30%{transform:scale(1)}45%{transform:scale(1.08)}}
+.yn{position:relative;display:flex;gap:12px;justify-content:center;min-height:56px}
+button{font:inherit;cursor:pointer;border:none}
+.btn{background:var(--rose);color:#fff;font-weight:700;padding:14px 28px;border-radius:999px;font-size:17px;transition:transform .15s,box-shadow .15s;box-shadow:0 8px 20px -8px var(--rose)}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
+.ghost{background:transparent;color:var(--muted);border:1.5px solid var(--line);padding:13px 26px;border-radius:999px;font-weight:600;transition:left .25s,top .25s}
+.ghost.run{position:absolute}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.chip{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px 6px;color:var(--ink);display:flex;flex-direction:column;gap:2px;align-items:center;transition:border-color .15s,background .15s}
+.chip small{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.chip b{font-family:var(--display);font-size:24px;font-weight:600;line-height:1}
+.chip span{font-size:12px;color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--rose);background:var(--rose-soft)}
+.places{display:flex;flex-direction:column;gap:8px;text-align:left}
+.place{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;color:var(--ink);text-align:left}
+.place .ico{font-size:22px;width:30px;text-align:center;flex:none}
+.place div{min-width:0}
+.place strong{display:block;font-weight:700}
+.place span{font-size:13px;color:var(--muted)}
+.place[aria-pressed="true"]{border-color:var(--rose);background:var(--rose-soft)}
+input[type=text]{font:inherit;width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;color:var(--ink);background:#fff}
+input[type=text]:focus,button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.back{background:none;color:var(--muted);font-weight:600;padding:8px 4px}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--rose)}
+.ticket{border:1.5px dashed var(--rose);border-radius:16px;padding:16px;text-align:left;display:grid;gap:10px;background:#fff}
+.ticket div{display:flex;justify-content:space-between;gap:12px}
+.ticket dt{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+.ticket dd{margin:0;font-weight:700;text-align:right}
+.msg{font-size:14px;background:var(--rose-soft);border-radius:12px;padding:12px;text-align:left;white-space:pre-wrap;user-select:all;color:var(--ink)}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+a.btn{text-decoration:none;display:inline-block}
+.note{font-size:13px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<main class="card" id="app" aria-live="polite"></main>
+
+<script>
+// ===== Настройки =====
+const FROM = "Бобуржон";          // кто приглашает
+const TELEGRAM = "bmirzazhonov";  // ваш username в Telegram без @
+const PLACES = [
+  {ico:"🍝", t:"Ужин в ресторане", d:"Уютное место, свечи, вкусная еда"},
+  {ico:"☕", t:"Кофе и десерты", d:"Спокойно поболтать в кофейне"},
+  {ico:"🌙", t:"Вечерняя прогулка", d:"Парк, огни города, разговоры"},
+  {ico:"🎬", t:"Кино", d:"Фильм на твой выбор, попкорн за мной"}
+];
+const TIMES = ["12:00","15:00","17:00","18:30","19:30","20:30"];
+// =====================
+
+const app = document.getElementById("app");
+let her = "Хадича";
+try { const h = decodeURIComponent(location.hash.slice(1)).trim(); if(h) her = h; } catch(e){}
+const S = {step:0, date:null, time:null, place:null, custom:""};
+const WD = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
+const MON = ["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
+const MONF = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+const WDF = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+
+function days(){
+  const out=[], now=new Date(); now.setHours(0,0,0,0);
+  for(let i=1;i<=12;i++){const d=new Date(now);d.setDate(now.getDate()+i);out.push(d)}
+  return out;
+}
+const fmt = d => `${d.getDate()} ${MONF[d.getMonth()]}, ${WDF[d.getDay()]}`;
+const heart = `<svg class="heart" viewBox="0 0 64 64" aria-hidden="true"><path fill="var(--rose)" d="M32 56S6 40 6 22a13 13 0 0 1 26-4 13 13 0 0 1 26 4c0 18-26 34-26 34z"/></svg>`;
+const dots = n => `<div class="dots">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}"></i>`).join("")}</div>`;
+const go = n => { S.step=n; render(); };
+
+function render(){
+  const s=S.step;
+  if(s===0){
+    app.innerHTML = `<section class="step">
+      ${heart}
+      <div class="eyebrow">Для тебя${her?`, ${esc(her)}`:""}</div>
+      <h1>Пойдёшь со мной <em>на свидание?</em></h1>
+      <p>Обещаю хорошую компанию и что ты не пожалеешь.</p>
+      <div class="yn" id="yn">
+        <button class="btn" id="yes">Да 💗</button>
+        <button class="ghost" id="no">Нет</button>
+      </div></section>`;
+    document.getElementById("yes").onclick=()=>go(1);
+    const no=document.getElementById("no"), box=document.getElementById("yn");
+    const flee=e=>{ e.preventDefault();
+      no.classList.add("run");
+      const bw=box.clientWidth, nw=no.offsetWidth;
+      no.style.left=Math.random()*(bw-nw)+"px";
+      no.style.top=(Math.random()*120-40)+"px";
+      no.textContent=["Точно?","Подумай ещё","Не-а 😏","Ну пожалуйста","Нет такой кнопки"][Math.floor(Math.random()*5)];
+    };
+    no.addEventListener("mouseenter",flee); no.addEventListener("click",flee); no.addEventListener("touchstart",flee,{passive:false});
+  }
+  if(s===1){
+    app.innerHTML = `<section class="step">
+      ${dots(1)}<div class="eyebrow">Ура!</div>
+      <h2>Когда тебе <em>удобно?</em></h2>
+      <div class="chips">${days().map((d,i)=>`<button class="chip" data-i="${i}" aria-pressed="${S.date&&+S.date===+d}">
+        <small>${WD[d.getDay()]}</small><b>${d.getDate()}</b><span>${MON[d.getMonth()]}</span></button>`).join("")}</div>
+      <div class="nav"><button class="back" id="b">← Назад</button><button class="btn" id="n" ${S.date?"":"disabled"}>Дальше</button></div></section>`;
+    const ds=days();
+    app.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{S.date=ds[c.dataset.i];render()});
+    bind(0,2);
+  }
+  if(s===2){
+    app.innerHTML = `<section class="step">
+      ${dots(2)}<div class="eyebrow">${fmt(S.date)}</div>
+      <h2>Во сколько <em>встретимся?</em></h2>
+      <div class="chips">${TIMES.map(t=>`<button class="chip" data-t="${t}" aria-pressed="${S.time===t}"><b>${t}</b></button>`).join("")}</div>
+      <div class="nav"><button class="back" id="b">← Назад</button><button class="btn" id="n" ${S.time?"":"disabled"}>Дальше</button></div></section>`;
+    app.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{S.time=c.dataset.t;render()});
+    bind(1,3);
+  }
+  if(s===3){
+    app.innerHTML = `<section class="step">
+      ${dots(3)}<div class="eyebrow">${fmt(S.date)} · ${S.time}</div>
+      <h2>Куда <em>пойдём?</em></h2>
+      <div class="places">${PLACES.map((p,i)=>`<button class="place" data-i="${i}" aria-pressed="${S.place===p.t}">
+        <span class="ico">${p.ico}</span><div><strong>${p.t}</strong><span>${p.d}</span></div></button>`).join("")}
+        <label class="note" for="own" style="color:var(--muted)">Или предложи своё место:</label>
+        <input type="text" id="own" placeholder="Например, твоё любимое кафе" value="${esc(S.custom)}">
+      </div>
+      <div class="nav"><button class="back" id="b">← Назад</button><button class="btn" id="n" ${(S.place||S.custom.trim())?"":"disabled"}>Готово</button></div></section>`;
+    app.querySelectorAll(".place").forEach(c=>c.onclick=()=>{S.place=PLACES[c.dataset.i].t;S.custom="";render()});
+    const own=document.getElementById("own");
+    own.oninput=()=>{S.custom=own.value; if(own.value.trim()){S.place=null;app.querySelectorAll(".place").forEach(p=>p.setAttribute("aria-pressed","false"))}
+      document.getElementById("n").disabled=!(S.place||S.custom.trim())};
+    bind(2,4);
+  }
+  if(s===4){
+    const where = S.custom.trim()||S.place;
+    const msg = `Да, я согласна! 💗\nДата: ${fmt(S.date)}\nВремя: ${S.time}\nМесто: ${where}\n— ${her}`;
+    const tgUrl = `https://t.me/${TELEGRAM}?text=${encodeURIComponent(msg)}`;
+    app.innerHTML = `<section class="step">
+      ${heart}<div class="eyebrow">Это свидание</div>
+      <h2>Жду с нетерпением, <em>${her?esc(her):"до встречи"}!</em></h2>
+      <dl class="ticket">
+        <div><dt>Когда</dt><dd>${fmt(S.date)}</dd></div>
+        <div><dt>Время</dt><dd>${S.time}</dd></div>
+        <div><dt>Где</dt><dd>${esc(where)}</dd></div>
+      </dl>
+      <p>Нажми кнопку — ответ откроется в Telegram, останется только отправить:</p>
+      <div class="row">
+        <a class="btn" id="tg" href="${tgUrl}" target="_blank" rel="noopener">Отправить ответ в Telegram ✈️</a>
+      </div>
+      <div class="msg" id="msg">${esc(msg)}</div>
+      <p class="note">Если текст не вставился сам — он уже скопирован, просто вставь его в чат с @${TELEGRAM}.</p>
+      <div class="row"><button class="back" id="copy">Скопировать ещё раз</button></div>
+      <p class="note">— ${FROM}</p>
+      <button class="back" id="b">← Изменить выбор</button></section>`;
+    document.getElementById("copy").onclick=async e=>{
+      const b=e.currentTarget;
+      try{await navigator.clipboard.writeText(msg);b.textContent="Скопировано ✓"}
+      catch(err){const r=document.createRange();r.selectNodeContents(document.getElementById("msg"));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);b.textContent="Текст выделен — скопируй"}
+    };
+    document.getElementById("tg").addEventListener("click",()=>{ try{ navigator.clipboard.writeText(msg).catch(()=>{}); }catch(e){} });
+    document.getElementById("b").onclick=()=>go(3);
+    burst();
+  }
+}
+function bind(prev,next){document.getElementById("b").onclick=()=>go(prev);document.getElementById("n").onclick=()=>go(next)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+// floating hearts
+const cv=document.getElementById("sky"), cx=cv.getContext("2d");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let W,H,P=[];
+function size(){W=cv.width=innerWidth*devicePixelRatio;H=cv.height=innerHeight*devicePixelRatio}
+size(); addEventListener("resize",size);
+function mk(y,fast){return{x:Math.random()*W,y:y??H+20,s:(6+Math.random()*14)*devicePixelRatio,v:(fast?2:.35+Math.random()*.6)*devicePixelRatio,a:.12+Math.random()*.25,w:Math.random()*6}}
+for(let i=0;i<26;i++)P.push(mk(Math.random()*H));
+function drawHeart(x,y,s){cx.beginPath();cx.moveTo(x,y+s*.3);cx.bezierCurveTo(x,y,x-s*.5,y,x-s*.5,y+s*.3);cx.bezierCurveTo(x-s*.5,y+s*.6,x,y+s*.8,x,y+s);cx.bezierCurveTo(x,y+s*.8,x+s*.5,y+s*.6,x+s*.5,y+s*.3);cx.bezierCurveTo(x+s*.5,y,x,y,x,y+s*.3);cx.fill()}
+function tick(t){cx.clearRect(0,0,W,H);for(const p of P){p.y-=p.v;cx.fillStyle=`rgba(224,88,127,${p.a})`;drawHeart(p.x+Math.sin(t/900+p.w)*8,p.y,p.s);if(p.y<-40)Object.assign(p,mk())}
+  if(P.length>40)P=P.filter((p,i)=>i<26||p.y>-30);requestAnimationFrame(tick)}
+function burst(){if(reduce)return;for(let i=0;i<30;i++)P.push(mk(H+Math.random()*100,true))}
+if(!reduce)requestAnimationFrame(tick);else{for(const p of P){cx.fillStyle=`rgba(224,88,127,${p.a})`;drawHeart(p.x,p.y,p.s)}}
+
+render();
+</script>
+
+</body>
+</html>
